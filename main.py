@@ -2,35 +2,74 @@
 
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+import matplotlib.gridspec as gridspec
 import numpy as np
 
 
 class Pic_analyz:
     def __init__(self):
-        image_name = "tst2.png"
-        self.pic = mpimg.imread(image_name)
+        self.gs = gridspec.GridSpec(10, 4)
+        self.pic = mpimg.imread("lenna.png")
         mpimg.imsave("orig.png", self.pic)
 
     def show_images(self):
-        plt.subplot(241)
+        # default
+        plt.subplot(self.gs[0, 0])
         plt.title("Default")
         plt.imshow(self.pic)
 
         self.to_grayscale()
 
-        plt.subplot(242)
+        plt.subplot(self.gs[0, 1])
         plt.title("Grayscale")
         plt.imshow(self.grayscale)
 
-        self.show_hists()
-        #
-        #  self.min_filter()
-        #  print(self.minf)
-        #  plt.subplot(gs[1, 1])
-        #  plt.title("Min Filter")
-        #  plt.imshow(self.min_filter)
+        self.show_hists(1, self.pic, self.grayscale)
 
-        #  self.show_hists(gs)
+        # min filter
+        minf = self.min_filter(self.pic)
+        plt.subplot(self.gs[4, 0])
+        plt.title("Min filter")
+        plt.imshow(minf)
+        mpimg.imsave("minf.png", minf)
+
+        minf_gray = self.min_filter(self.grayscale)
+        plt.subplot(self.gs[4, 1])
+        plt.title("Min filter")
+        plt.imshow(minf_gray)
+        mpimg.imsave("minf_gray.png", minf_gray)
+
+        self.show_hists(5, minf, minf_gray)
+
+        # max filter
+        maxf = self.max_filter(self.pic)
+        plt.subplot(self.gs[6, 0])
+        plt.title("Max filter")
+        plt.imshow(maxf)
+        mpimg.imsave("maxf.png", maxf)
+
+        maxf_gray = self.max_filter(self.grayscale)
+        plt.subplot(self.gs[6, 1])
+        plt.title("Max filter")
+        plt.imshow(maxf_gray)
+        mpimg.imsave("maxf_gray.png", maxf_gray)
+
+        self.show_hists(7, maxf, maxf_gray)
+
+        # min-max filter
+        min_maxf = self.min_max_filter(self.pic)
+        plt.subplot(self.gs[8, 0])
+        plt.title("Min-max filter")
+        plt.imshow(min_maxf)
+        mpimg.imsave("min_maxf.png", min_maxf)
+
+        min_maxf_gray = self.min_max_filter(self.grayscale)
+        plt.subplot(self.gs[8, 1])
+        plt.title("Min-max filter")
+        plt.imshow(min_maxf_gray)
+        mpimg.imsave("min_maxf_gray.png", min_maxf_gray)
+
+        self.show_hists(9, min_maxf, min_maxf_gray)
 
     def to_grayscale(self):
         self.grayscale = np.zeros(self.pic.shape)
@@ -44,56 +83,44 @@ class Pic_analyz:
             j = 0
         mpimg.imsave("grayscale.png", self.grayscale)
 
-    def show_hists(self):
-        plt.subplot(245)
+    def show_hists(self, line, orig, gray):
+        plt.subplot(self.gs[line, 0])
         plt.title("Red Histogram")
-        plt.hist(self.pic[:, :, 0].ravel(), bins=256, fc='k', ec='k')
+        plt.hist(orig[:, :, 0].ravel(), bins=256, fc='k', ec='k')
 
-        plt.subplot(246)
+        plt.subplot(self.gs[line, 1])
         plt.title("Green Histogram")
-        plt.hist(self.pic[:, :, 1].ravel(), bins=256, fc='k', ec='k')
+        plt.hist(orig[:, :, 1].ravel(), bins=256, fc='k', ec='k')
 
-        plt.subplot(247)
+        plt.subplot(self.gs[line, 2])
         plt.title("Blue Histogram")
-        plt.hist(self.pic[:, :, 2].ravel(), bins=256, fc='k', ec='k')
+        plt.hist(orig[:, :, 2].ravel(), bins=256, fc='k', ec='k')
 
-        plt.subplot(248)
+        plt.subplot(self.gs[line, 3])
         plt.title("Grayscale Histogram")
-        plt.hist(self.grayscale[:, :, 0].ravel(), bins=256, fc='k', ec='k')
+        plt.hist(gray[:, :, 0].ravel(), bins=256, fc='k', ec='k')
 
-    def min_filter(self):
-        y = 1
-        self.minf = np.zeros((len(self.pic), len(self.pic[0]), len(self.pic[0][0])))
-        self.minf[0] = self.pic[0]
-        self.minf[len(self.minf) - 1] = self.pic[len(self.pic) - 1]
-        r = list()
-        g = list()
-        b = list()
-        while y < len(self.pic) - 1:
-            self.minf[y][0] = self.pic[y][0]
-            x = 1
-            while x < len(self.pic[0]) - 1:
-                print(y, x)
-                mask = list()
-                mask.append(self.pic[y + 1][x - 1])
-                mask.append(self.pic[y + 1][x])
-                mask.append(self.pic[y + 1][x - 1])
-                mask.append(self.pic[y][x - 1])
-                mask.append(self.pic[y][x + 1])
-                mask.append(self.pic[y - 1][x - 1])
-                mask.append(self.pic[y - 1][x])
-                mask.append(self.pic[y - 1][x - 1])
+    def min_filter(self, src):
+        dst = np.copy(src)
+        for y in range(1, src.shape[0]):
+            for x in range(1, src.shape[1]):
+                dst[y, x, 0] = np.min(src[y-1:y+1, x-1:x+1, 0])
+                dst[y, x, 1] = np.min(src[y-1:y+1, x-1:x+1, 1])
+                dst[y, x, 2] = np.min(src[y-1:y+1, x-1:x+1, 2])
+        return dst
 
-                for el in mask:
-                    r.append(el[0])
-                    g.append(el[1])
-                    b.append(el[2])
-                self.minf[y][x][0] = np.min(mask, axis=0)
-                self.minf[y][x][1] = np.min(mask, axis=1)
-                self.minf[y][x][2] = np.min(mask, axis=2)
-                x += 1
-            self.minf[y][x] = self.pic[y][x]
-            y += 1
+    def max_filter(self, src):
+        dst = np.copy(src)
+        for y in range(1, src.shape[0]):
+            for x in range(1, src.shape[1]):
+                dst[y, x, 0] = np.max(src[y-1:y+1, x-1:x+1, 0])
+                dst[y, x, 1] = np.max(src[y-1:y+1, x-1:x+1, 1])
+                dst[y, x, 2] = np.max(src[y-1:y+1, x-1:x+1, 2])
+        return dst
+
+    def min_max_filter(self, src):
+        tmp = self.min_filter(src)
+        return self.max_filter(tmp)
 
     def show(self):
         self.show_images()
