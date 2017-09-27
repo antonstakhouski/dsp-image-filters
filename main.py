@@ -61,50 +61,50 @@ class Pic_analyz:
 
         self.show_hists(5, prepe, prepe_gray)
 
-        #  # min filter
-        #  minf = self.min_filter(self.pic)
-        #  plt.subplot(self.gs[4, 0])
-        #  plt.title("Min filter")
-        #  plt.imshow(minf)
-        #  mpimg.imsave("minf.png", minf)
-        #
-        #  minf_gray = self.min_filter(self.grayscale)
-        #  plt.subplot(self.gs[4, 1])
-        #  plt.title("Min filter")
-        #  plt.imshow(minf_gray)
-        #  mpimg.imsave("minf_gray.png", minf_gray)
-        #
-        #  self.show_hists(5, minf, minf_gray)
-        #
-        #  # max filter
-        #  maxf = self.max_filter(self.pic)
-        #  plt.subplot(self.gs[6, 0])
-        #  plt.title("Max filter")
-        #  plt.imshow(maxf)
-        #  mpimg.imsave("maxf.png", maxf)
-        #
-        #  maxf_gray = self.max_filter(self.grayscale)
-        #  plt.subplot(self.gs[6, 1])
-        #  plt.title("Max filter")
-        #  plt.imshow(maxf_gray)
-        #  mpimg.imsave("maxf_gray.png", maxf_gray)
-        #
-        #  self.show_hists(7, maxf, maxf_gray)
-        #
-        #  # min-max filter
-        #  min_maxf = self.min_max_filter(self.pic)
-        #  plt.subplot(self.gs[8, 0])
-        #  plt.title("Min-max filter")
-        #  plt.imshow(min_maxf)
-        #  mpimg.imsave("min_maxf.png", min_maxf)
-        #
-        #  min_maxf_gray = self.min_max_filter(self.grayscale)
-        #  plt.subplot(self.gs[8, 1])
-        #  plt.title("Min-max filter")
-        #  plt.imshow(min_maxf_gray)
-        #  mpimg.imsave("min_maxf_gray.png", min_maxf_gray)
-        #
-        #  self.show_hists(9, min_maxf, min_maxf_gray)
+        # min filter
+        minf = self.min_filter(self.pic)
+        plt.subplot(self.gs[6, 0])
+        plt.title("Min filter")
+        plt.imshow(minf)
+        mpimg.imsave("minf.png", minf)
+
+        minf_gray = self.min_filter(self.grayscale)
+        plt.subplot(self.gs[6, 1])
+        plt.title("Min filter")
+        plt.imshow(minf_gray)
+        mpimg.imsave("minf_gray.png", minf_gray)
+
+        self.show_hists(7, minf, minf_gray)
+
+        # max filter
+        maxf = self.max_filter(self.pic)
+        plt.subplot(self.gs[8, 0])
+        plt.title("Max filter")
+        plt.imshow(maxf)
+        mpimg.imsave("maxf.png", maxf)
+
+        maxf_gray = self.max_filter(self.grayscale)
+        plt.subplot(self.gs[8, 1])
+        plt.title("Max filter")
+        plt.imshow(maxf_gray)
+        mpimg.imsave("maxf_gray.png", maxf_gray)
+
+        self.show_hists(9, maxf, maxf_gray)
+
+        # min-max filter
+        min_maxf = self.min_max_filter(self.pic)
+        plt.subplot(self.gs[10, 0])
+        plt.title("Min-max filter")
+        plt.imshow(min_maxf)
+        mpimg.imsave("min_maxf.png", min_maxf)
+
+        min_maxf_gray = self.min_max_filter(self.grayscale)
+        plt.subplot(self.gs[10, 1])
+        plt.title("Min-max filter")
+        plt.imshow(min_maxf_gray)
+        mpimg.imsave("min_maxf_gray.png", min_maxf_gray)
+
+        self.show_hists(11, min_maxf, min_maxf_gray)
 
     def to_grayscale(self):
         self.grayscale = np.zeros(self.pic.shape)
@@ -120,11 +120,15 @@ class Pic_analyz:
 
     def linear_contr(self, src, fmin=0.0, fmax=1.0, gmin=0.0, gmax=1.0):
         dst = np.copy(src)
-        for y in range(1, src.shape[0]):
-            for x in range(1, src.shape[1]):
-                dst[y, x, 0] = (src[y, x, 0] - fmin) / (fmax - fmin) * (gmax - gmin) + gmin
-                dst[y, x, 1] = (src[y, x, 1] - fmin) / (fmax - fmin) * (gmax - gmin) + gmin
-                dst[y, x, 2] = (src[y, x, 2] - fmin) / (fmax - fmin) * (gmax - gmin) + gmin
+        for y in range(0, src.shape[0]):
+            for x in range(0, src.shape[1]):
+                for clr in range(0, src.shape[2]):
+                    if src[y, x, clr] <= fmin:
+                        dst[y, x, clr] = gmin
+                    elif src[y, x, clr] >= fmax:
+                        dst[y, x, clr] = gmax
+                    else:
+                        dst[y, x, clr] = (src[y, x, clr] - fmin) / (fmax - fmin) * (gmax - gmin) + gmin
         return dst
 
     def show_hists(self, line, orig, gray):
